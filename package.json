@@ -1,0 +1,72 @@
+{
+  "name": "agentgenia-windows",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent Genia desktop client for Windows",
+  "author": "The Computer Work Company, Inc.",
+  "license": "UNLICENSED",
+  "main": "desktop/dist/main.cjs",
+  "packageManager": "pnpm@11.16.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node desktop/build.mjs",
+    "start": "pnpm build && electron .",
+    "smoke": "pnpm build && electron . --smoke-test",
+    "typecheck": "tsc -p desktop/tsconfig.json --noEmit",
+    "test": "pnpm typecheck && pnpm build && node --test tests/desktop.test.mjs",
+    "pack:win": "pnpm build && electron-builder --win dir --x64 --publish never",
+    "dist:win": "pnpm test && electron-builder --win nsis --x64 --publish never"
+  },
+  "dependencies": {
+    "simple-icons": "^15.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "electron": "^37.4.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.0",
+    "sharp": "^0.34.3",
+    "typescript": "^5.9.0"
+  },
+  "build": {
+    "appId": "com.agentgenia.desktop",
+    "productName": "Agent Genia",
+    "executableName": "AgentGenia",
+    "artifactName": "AgentGenia-Setup-${version}-${arch}.${ext}",
+    "asar": true,
+    "compression": "maximum",
+    "npmRebuild": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "desktop/dist/**/*",
+      "desktop/renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Agent Genia",
+      "uninstallDisplayName": "Agent Genia"
+    }
+  }
+}

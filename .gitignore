@@ -1,0 +1,7 @@
+node_modules/
+desktop/dist/
+desktop/renderer/icon.png
+build/icon.png
+release/
+*.log
+.DS_Store
