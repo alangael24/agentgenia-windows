@@ -29,11 +29,29 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install backend test dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Test backend and Pi harness
+        run: python -m unittest discover -s tests -p "test_*.py"
+
       - name: Test and build NSIS installer
         run: pnpm dist:win
+
+      - name: Smoke test packaged backend and Pi runtime
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath "release/win-unpacked/AgentGenia.exe" -ArgumentList "--runtime-smoke-test" -PassThru -Wait
+          if ($process.ExitCode -ne 0) { throw "Packaged runtime smoke test failed with exit code $($process.ExitCode)." }
 
       - name: Upload installer
         uses: actions/upload-artifact@v4

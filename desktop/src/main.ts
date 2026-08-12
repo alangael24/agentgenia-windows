@@ -15,9 +15,11 @@ import {
   updateBotProfile
 } from "./contracts";
 import { DesktopOAuthController } from "./oauth";
+import { LocalRuntimeManager } from "./local-runtime";
 
 const CHANNELS = Object.freeze({
   bootstrap: "desktop:bootstrap",
+  runtimeSnapshot: "desktop:runtime-snapshot",
   connectionSnapshot: "desktop:connection-snapshot",
   signIn: "desktop:sign-in",
   signOut: "desktop:sign-out",
@@ -79,7 +81,10 @@ app.setAppUserModelId("com.agentgenia.desktop");
 let mainWindow: BrowserWindow | null = null;
 let stateStore: DesktopStateStore;
 let oauthController: DesktopOAuthController;
-const smokeTest = process.argv.includes("--smoke-test");
+let localRuntime: LocalRuntimeManager;
+const rendererSmokeTest = process.argv.includes("--smoke-test");
+const runtimeSmokeTest = process.argv.includes("--runtime-smoke-test");
+const smokeTest = rendererSmokeTest || runtimeSmokeTest;
 const hasSingleInstanceLock = smokeTest || app.requestSingleInstanceLock();
 
 if (!hasSingleInstanceLock) app.quit();
@@ -93,6 +98,7 @@ app.on("second-instance", () => {
 
 function registerDesktopIpc(): void {
   ipcMain.handle(CHANNELS.bootstrap, () => stateStore.snapshot());
+  ipcMain.handle(CHANNELS.runtimeSnapshot, () => localRuntime.snapshot());
   ipcMain.handle(CHANNELS.connectionSnapshot, () => oauthController.snapshot());
   ipcMain.handle(CHANNELS.signIn, () => oauthController.signIn());
   ipcMain.handle(CHANNELS.signOut, () => oauthController.signOut());
@@ -217,8 +223,25 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
     shell,
     appVersion: app.getVersion()
   });
+  localRuntime = new LocalRuntimeManager({
+    appPath: app.getAppPath(),
+    executablePath: process.execPath,
+    isPackaged: app.isPackaged,
+    resourcesPath: process.resourcesPath,
+    userDataPath
+  });
   registerDesktopIpc();
+  if (runtimeSmokeTest) {
+    void localRuntime.start().then((snapshot) => {
+      if (snapshot.available) console.log("Agent Genia local runtime smoke test passed.");
+      else console.error(snapshot.error || "Agent Genia local runtime smoke test failed.");
+      localRuntime.stop();
+      app.exit(snapshot.available ? 0 : 1);
+    });
+    return;
+  }
   createWindow();
+  if (!rendererSmokeTest) void localRuntime.start();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -227,3 +250,5 @@ if (hasSingleInstanceLock) app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+
+app.on("before-quit", () => localRuntime?.stop());

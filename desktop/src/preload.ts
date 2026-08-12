@@ -3,6 +3,7 @@ import type { BotDraft, BotPatch, BotSetupAnswer, DesktopApi } from "./contracts
 
 const api: DesktopApi = Object.freeze({
   bootstrap: () => ipcRenderer.invoke("desktop:bootstrap"),
+  runtimeSnapshot: () => ipcRenderer.invoke("desktop:runtime-snapshot"),
   connectionSnapshot: () => ipcRenderer.invoke("desktop:connection-snapshot"),
   signIn: () => ipcRenderer.invoke("desktop:sign-in"),
   signOut: () => ipcRenderer.invoke("desktop:sign-out"),

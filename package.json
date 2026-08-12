@@ -1,6 +1,6 @@
 {
   "name": "agentgenia-windows",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Agent Genia desktop client for Windows",
   "author": "The Computer Work Company, Inc.",
@@ -16,18 +16,24 @@
     "smoke": "pnpm build && electron . --smoke-test",
     "typecheck": "tsc -p desktop/tsconfig.json --noEmit",
     "test": "pnpm typecheck && pnpm build && node --test tests/desktop.test.mjs",
-    "pack:win": "pnpm build && electron-builder --win dir --x64 --publish never",
-    "dist:win": "pnpm test && electron-builder --win nsis --x64 --publish never"
+    "typecheck:connectors": "tsc -p extensions/connectors/tsconfig.json --noEmit",
+    "test:connectors": "pnpm typecheck:connectors && node --test tests/test_connector_extension.mjs",
+    "prepare:runtime:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-windows-runtime.ps1",
+    "pack:win": "pnpm build && pnpm prepare:runtime:win && electron-builder --win dir --x64 --publish never",
+    "dist:win": "pnpm test && pnpm test:connectors && pnpm prepare:runtime:win && electron-builder --win nsis --x64 --publish never"
   },
   "dependencies": {
     "simple-icons": "^15.15.0"
   },
   "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.84.1",
     "@types/node": "^24.10.0",
     "electron": "^37.4.0",
     "electron-builder": "^26.0.12",
     "esbuild": "^0.25.0",
+    "pi-chrome": "0.15.46",
     "sharp": "^0.34.3",
+    "typebox": "1.3.7",
     "typescript": "^5.9.0"
   },
   "build": {
@@ -45,6 +51,24 @@
       "desktop/dist/**/*",
       "desktop/renderer/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "runtime-build/python",
+        "to": "agentgenia-runtime/python"
+      },
+      {
+        "from": "go_backend",
+        "to": "agentgenia-runtime/backend/go_backend"
+      },
+      {
+        "from": "extensions",
+        "to": "agentgenia-runtime/backend/extensions"
+      },
+      {
+        "from": "runtime-build/pi/node_modules",
+        "to": "agentgenia-runtime/pi/node_modules"
+      }
     ],
     "win": {
       "icon": "build/icon.png",

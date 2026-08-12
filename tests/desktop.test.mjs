@@ -94,13 +94,24 @@ test("isolates the renderer and keeps all secrets in the main process", async ()
   assert.match(oauth, /safeStripeUrl/);
 });
 
-test("contains no backend or Pi harness implementation", async () => {
-  const sources = await Promise.all([
+test("packages and supervises the backend and complete Pi harness", async () => {
+  const [main, runtime, backend, harness, packageJson] = await Promise.all([
     readFile(new URL("../desktop/src/main.ts", import.meta.url), "utf8"),
-    readFile(new URL("../desktop/src/preload.ts", import.meta.url), "utf8"),
-    readFile(new URL("../desktop/src/renderer.ts", import.meta.url), "utf8")
+    readFile(new URL("../desktop/src/local-runtime.ts", import.meta.url), "utf8"),
+    readFile(new URL("../go_backend/server.py", import.meta.url), "utf8"),
+    readFile(new URL("../go_backend/pi_harness.py", import.meta.url), "utf8"),
+    readFile(new URL("../package.json", import.meta.url), "utf8")
   ]);
-  for (const source of sources) assert.doesNotMatch(source, /pi_harness|go_backend|pi-chrome/);
+  assert.match(main, /new LocalRuntimeManager/);
+  assert.match(main, /localRuntime\.start\(\)/);
+  assert.match(main, /before-quit[\s\S]{0,80}localRuntime\?\.stop\(\)/);
+  assert.match(runtime, /HOST: "127\.0\.0\.1"/);
+  assert.match(runtime, /ADMIN_TOKEN: randomBytes\(32\)/);
+  assert.match(runtime, /PI_CHROME_ISOLATION: "per_run"/);
+  assert.match(runtime, /PI_NODE_RUN_AS_ELECTRON: "1"/);
+  assert.match(backend, /POST \/v1\/agent\/run/);
+  assert.match(harness, /class PiHarness/);
+  assert.match(packageJson, /agentgenia-runtime\/pi\/node_modules/);
 });
 
 test("configures a per-user x64 NSIS installer", async () => {

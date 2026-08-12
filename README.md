@@ -2,10 +2,12 @@
 
 Aplicación oficial de escritorio de Agent Genia para Windows 10/11 de 64 bits.
 
-Este repositorio contiene únicamente el cliente Electron. La autenticación, los
-planes y el acceso a los modelos se procesan en el backend de Agent Genia; las
-credenciales privadas de Stripe, Google y los conectores nunca se incluyen en
-el instalador.
+Este repositorio contiene el cliente Electron, el backend Python de Agent Genia
+y el harness completo de Pi. El instalador incluye un Python aislado, Pi, la
+extensión de conectores y pi-chrome; Electron inicia el backend en loopback y lo
+detiene al cerrar la aplicación. La autenticación, los planes y los secretos de
+producción siguen en los servicios de Agent Genia y nunca se incluyen en el
+instalador.
 
 ## Funcionalidad
 
@@ -15,10 +17,14 @@ el instalador.
 - Checkout y portal de suscripción de Stripe.
 - Sesiones cifradas con `safeStorage` de Electron, que usa DPAPI en Windows.
 - Instancia única y controles de ventana nativos de Windows.
+- Backend local en un puerto aleatorio de `127.0.0.1`, con token administrativo
+  efímero, SQLite/clave por instalación y proceso administrado por Electron.
+- Harness de Pi con ejecuciones aisladas, carga dinámica de conectores y soporte
+  de pi-chrome mediante perfiles efímeros por tarea.
 
 ## Desarrollo
 
-Requiere Node.js 22 y pnpm 11.
+Requiere Node.js 22, pnpm 11 y Python 3.12 para desarrollo y pruebas.
 
 ```powershell
 pnpm install
@@ -34,6 +40,8 @@ pueden sustituir con `WRAPPER_SERVICE_URL` y `OUTCOME_SERVICE_URL`.
 
 ```powershell
 pnpm test
+pnpm test:connectors
+python -m unittest discover -s tests -p "test_*.py"
 pnpm smoke
 ```
 
@@ -53,4 +61,6 @@ el instalador como artifact del workflow.
 
 El renderer está aislado (`contextIsolation`, sandbox y sin integración de
 Node). Todas las operaciones de red y secretos pasan por IPC validado en el
-proceso principal. El instalador no contiene secretos de servidor.
+proceso principal. El runtime escucha solo en loopback, hereda una lista mínima
+de variables de entorno y recibe un `ADMIN_TOKEN` aleatorio nuevo en cada
+arranque. El instalador no contiene secretos de servidor.

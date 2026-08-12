@@ -1324,6 +1324,9 @@ function createPreviewApi(): DesktopApi {
   let previewBilling = { ...emptyBillingSnapshot(), configured: true };
   return {
     async bootstrap() { return structuredClone(previewState); },
+    async runtimeSnapshot() {
+      return { state: "ready", available: true, url: "http://127.0.0.1:8787", piEnabled: true, error: "" };
+    },
     async connectionSnapshot() { return structuredClone(previewConnections); },
     async signIn() {
       previewConnections = { ...previewConnections, account: { connected: true, required: true, email: "demo@example.com", name: "Demo" } };

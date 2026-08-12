@@ -4,5 +4,9 @@ desktop/renderer/icon.png
 build/icon.png
 release/
 release-ci/
+runtime-build/
+data/
+__pycache__/
+*.pyc
 *.log
 .DS_Store

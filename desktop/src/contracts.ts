@@ -228,6 +228,7 @@ export interface BotPatch {
 
 export interface DesktopApi {
   bootstrap(): Promise<AppState>;
+  runtimeSnapshot(): Promise<LocalRuntimeSnapshot>;
   connectionSnapshot(): Promise<ConnectorConnectionSnapshot>;
   signIn(): Promise<ConnectorConnectionSnapshot>;
   signOut(): Promise<ConnectorConnectionSnapshot>;
@@ -242,6 +243,14 @@ export interface DesktopApi {
   answerBotSetup(botId: string, answer: BotSetupAnswer): Promise<AppState>;
   setActiveBot(botId: string | null): Promise<AppState>;
   deleteBot(botId: string): Promise<AppState>;
+}
+
+export interface LocalRuntimeSnapshot {
+  state: "stopped" | "starting" | "ready" | "error";
+  available: boolean;
+  url: string;
+  piEnabled: boolean;
+  error: string;
 }
 
 export function initialAppState(): AppState {
