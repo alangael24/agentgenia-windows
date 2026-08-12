@@ -175,7 +175,9 @@ export class LocalRuntimeManager {
     if (this.options.isPackaged) {
       const root = path.join(this.options.resourcesPath, "agentgenia-runtime");
       return {
-        python: path.join(root, "python", "python.exe"),
+        python: process.platform === "win32"
+          ? path.join(root, "python", "python.exe")
+          : path.join(root, "python", "bin", "python3"),
         backendRoot: path.join(root, "backend"),
         piCli: path.join(root, "pi", "node_modules", "@earendil-works", "pi-coding-agent", "dist", "cli.js"),
         piChromeExtension: path.join(root, "pi", "node_modules", "pi-chrome", "extensions", "chrome-profile-bridge", "index.ts"),

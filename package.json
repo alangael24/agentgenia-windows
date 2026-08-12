@@ -19,8 +19,10 @@
     "typecheck:connectors": "tsc -p extensions/connectors/tsconfig.json --noEmit",
     "test:connectors": "pnpm typecheck:connectors && node --test tests/test_connector_extension.mjs",
     "prepare:runtime:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-windows-runtime.ps1",
+    "prepare:runtime:mac": "bash scripts/prepare-mac-runtime.sh",
     "pack:win": "pnpm build && pnpm prepare:runtime:win && electron-builder --win dir --x64 --publish never",
-    "dist:win": "pnpm test && pnpm test:connectors && pnpm prepare:runtime:win && electron-builder --win nsis --x64 --publish never"
+    "dist:win": "pnpm test && pnpm test:connectors && pnpm prepare:runtime:win && electron-builder --win nsis --x64 --publish never",
+    "dist:mac": "pnpm test && pnpm test:connectors && pnpm prepare:runtime:mac && electron-builder --mac dmg --arm64 --publish never"
   },
   "dependencies": {
     "simple-icons": "^15.15.0"
@@ -82,6 +84,17 @@
       ],
       "requestedExecutionLevel": "asInvoker",
       "verifyUpdateCodeSignature": false
+    },
+    "mac": {
+      "icon": "build/icon.png",
+      "target": [{ "target": "dmg", "arch": ["arm64"] }],
+      "category": "public.app-category.productivity",
+      "identity": "alan gael romero robles (NNS3B4399D)",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "artifactName": "AgentGenia-${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
