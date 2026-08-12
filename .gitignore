@@ -3,5 +3,6 @@ desktop/dist/
 desktop/renderer/icon.png
 build/icon.png
 release/
+release-ci/
 *.log
 .DS_Store
