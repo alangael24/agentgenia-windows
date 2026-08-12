@@ -112,3 +112,9 @@ test("configures a per-user x64 NSIS installer", async () => {
   assert.equal(packageJson.build.nsis.oneClick, false);
   assert.match(packageJson.build.artifactName, /^AgentGenia-Setup-/);
 });
+
+test("uses Windows-safe file URL conversion in the build script", async () => {
+  const buildScript = await readFile(new URL("../desktop/build.mjs", import.meta.url), "utf8");
+  assert.match(buildScript, /fileURLToPath/);
+  assert.doesNotMatch(buildScript, /\.pathname/);
+});
