@@ -36,7 +36,8 @@ Write-Host "Creating a portable Pi production dependency tree..."
 New-Item -ItemType Directory -Path $PiRoot -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $RepositoryRoot "runtime\pi\package.json") -Destination (Join-Path $PiRoot "package.json")
 Copy-Item -LiteralPath (Join-Path $RepositoryRoot "runtime\pi\pnpm-lock.yaml") -Destination (Join-Path $PiRoot "pnpm-lock.yaml")
-pnpm --dir $PiRoot install --prod --frozen-lockfile --ignore-workspace
+Copy-Item -LiteralPath (Join-Path $RepositoryRoot "runtime\pi\pnpm-workspace.yaml") -Destination (Join-Path $PiRoot "pnpm-workspace.yaml")
+pnpm --dir $PiRoot install --prod --frozen-lockfile
 if ($LASTEXITCODE -ne 0) { throw "Could not create the Pi runtime." }
 
 $PiCli = Join-Path $PiRoot "node_modules\@earendil-works\pi-coding-agent\dist\cli.js"
