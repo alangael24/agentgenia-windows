@@ -324,6 +324,9 @@ class Backend:
             chrome_isolation=cfg.pi_chrome_isolation,
         )
 
+    def close(self) -> None:
+        self.store.close()
+
     # ---------- auth helpers ----------
     def bearer(self, handler: BaseHTTPRequestHandler) -> str | None:
         auth = handler.headers.get("Authorization", "")
@@ -1053,6 +1056,9 @@ def serve(cfg: Config) -> None:
         httpd.serve_forever()
     except KeyboardInterrupt:
         print("\n[server] deteniendo...")
+    finally:
+        httpd.server_close()
+        backend.close()
 
 
 def cli() -> None:

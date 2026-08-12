@@ -158,6 +158,11 @@ class Store:
             )
             self._conn.commit()
 
+    def close(self) -> None:
+        """Libera la conexión para un apagado limpio, especialmente en Windows."""
+        with self._lock:
+            self._conn.close()
+
     def _migrate_users_default_to_free(self) -> None:
         """Reconstruye la tabla para cambiar el DEFAULT de bases ya existentes."""
         self._conn.execute("BEGIN IMMEDIATE")

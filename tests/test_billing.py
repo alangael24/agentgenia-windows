@@ -66,6 +66,7 @@ class TestBilling(unittest.TestCase):
         self.service = BillingService(self.store, config(), client=self.client)
 
     def tearDown(self):
+        self.store.close()
         self.tmp.cleanup()
 
     def event(self, event_id: str, event_type: str, obj: dict) -> dict:

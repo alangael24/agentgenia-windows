@@ -9,6 +9,7 @@ import shutil
 import signal
 import socket
 import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -452,8 +453,10 @@ class PiHarness:
             )
         profile = run_dir / "chrome-profile"
         profile.mkdir(parents=True, exist_ok=False)
-        return [
-            binary,
+        command = [binary]
+        if Path(binary).suffix.lower() == ".py":
+            command = [sys.executable, binary]
+        command.extend([
             f"--user-data-dir={profile}",
             f"--load-extension={companion}",
             f"--disable-extensions-except={companion}",
@@ -462,7 +465,8 @@ class PiHarness:
             "--disable-sync",
             "--password-store=basic",
             "about:blank",
-        ]
+        ])
+        return command
 
     @staticmethod
     def _stop_process(process: subprocess.Popen[Any]) -> None:
@@ -504,7 +508,10 @@ class PiHarness:
     def _command(self, browser: bool) -> list[str]:
         binary = self._resolved_binary() or self.binary
         command = [binary]
-        if Path(binary).suffix.lower() in (".js", ".mjs", ".cjs"):
+        suffix = Path(binary).suffix.lower()
+        if suffix == ".py":
+            command = [sys.executable, binary]
+        elif suffix in (".js", ".mjs", ".cjs"):
             node_binary = self._resolved_node_binary()
             if not node_binary:
                 raise PiHarnessError("No se encontro Node.js para ejecutar Pi")

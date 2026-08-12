@@ -220,6 +220,7 @@ class WrapperServer:
     def stop(self):
         self.httpd.shutdown()
         self.httpd.server_close()
+        self.backend.close()
 
     def req(self, method, path, body=None, headers=None, raw=False, include_headers=False):
         url = self.base + path
